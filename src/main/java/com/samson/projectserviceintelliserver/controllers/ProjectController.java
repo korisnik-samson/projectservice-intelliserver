@@ -26,8 +26,8 @@ public class ProjectController {
         return this.projectService.createProject(project);
     }
     
-    @GetMapping(path = "api/projects/{id}")
-    public Optional<Project> getProjectById(Long id) {
+    @GetMapping(path = "api/project/{id}")
+    public Optional<Project> getProjectById(@PathVariable("id") Long id) {
         return this.projectService.getProjectById(id);
     }
     
@@ -37,7 +37,7 @@ public class ProjectController {
     }
     
     @GetMapping(path = "api/projects/{owner}")
-    public Optional<List<Project>> getProjectsByOwner(String owner) {
+    public Optional<List<Project>> getProjectsByOwner(@PathVariable("owner") String owner) {
         return this.projectService.getProjectsByOwner(owner);
     }
     

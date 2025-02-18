@@ -12,6 +12,6 @@ import java.util.Optional;
 public interface ProjectRepository extends JpaRepository<Project, Long> {
     
     //@Query("SELECT * FROM Project p WHERE p.owner = ?1")
-    public Optional<List<Project>> findByOwner(String owner);
+    //public Optional<List<Project>> findByOwner(String owner);
     
 }

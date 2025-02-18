@@ -43,18 +43,21 @@ public class ProjectService {
     }
 
     public Optional<List<Project>> getProjectsByOwner(String owner) {
-        return this.projectRepository.findByOwner(owner);
+        return null;
     }
 
-    /*public Project updateProject(Long projectId, Project updateFields) {
+    public Project updateProject(Long projectId, Project updateFields) {
+        return null;
     }
 
     public void deleteProject(Long projectId) {
     }
 
     public Project addUserToProject(Long projectId, String username) {
+        return null;
     }
 
     public Project removeUserFromProject(Long projectId, String username) {
-    }*/
+        return null;
+    }
 }
