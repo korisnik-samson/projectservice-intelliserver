@@ -3,7 +3,6 @@ package com.samson.projectserviceintelliserver.models;
 import com.samson.projectserviceintelliserver.lib.ProjectStatus;
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.cglib.core.Local;
 import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
