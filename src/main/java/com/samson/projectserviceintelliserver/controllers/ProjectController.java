@@ -2,16 +2,13 @@ package com.samson.projectserviceintelliserver.controllers;
 
 import com.samson.projectserviceintelliserver.models.Project;
 import com.samson.projectserviceintelliserver.services.ProjectService;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import javax.swing.text.html.Option;
 import java.util.List;
 import java.util.Optional;
 
-@Controller
+@RestController
 public class ProjectController {
     
     private final ProjectService projectService;
@@ -27,7 +24,7 @@ public class ProjectController {
     }
     
     @GetMapping(path = "api/projects/{id}")
-    public Optional<Project> getProjectById(Long id) {
+    public Optional<Project> getProjectById(@PathVariable("id") Long id) {
         return this.projectService.getProjectById(id);
     }
     
@@ -37,7 +34,7 @@ public class ProjectController {
     }
     
     @GetMapping(path = "api/projects/{owner}")
-    public Optional<List<Project>> getProjectsByOwner(String owner) {
+    public Optional<List<Project>> getProjectsByOwner(@PathVariable("owner") String owner) {
         return this.projectService.getProjectsByOwner(owner);
     }
     
