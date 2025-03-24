@@ -1,5 +1,6 @@
 package com.samson.projectserviceintelliserver.controllers;
 
+import com.samson.projectserviceintelliserver.annotations.PreAuthorize;
 import com.samson.projectserviceintelliserver.models.Project;
 import com.samson.projectserviceintelliserver.services.ProjectService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,7 @@ public class ProjectController {
     }
     
     @PostMapping(path = "api/projects")
+    @PreAuthorize(role = "hasRole(ADMIN)")
     public Project createProject(@RequestBody Project project) {
         return this.projectService.createProject(project);
     }
@@ -39,6 +41,7 @@ public class ProjectController {
     }
     
     @PatchMapping(path = "api/projects/{id}")
+    // add annotation for authorization - only the project creator can update the project 
     public Project updateProject(@PathVariable("id") Long projectId, @RequestBody Project updateFields) {
         return this.projectService.updateProject(projectId, updateFields);
     }
@@ -48,6 +51,7 @@ public class ProjectController {
         this.projectService.deleteProject(projectId);
     }
     
+    // add annotation for authorization - only the project creator can add or remove users
     @PostMapping(path = "api/projects/{id}/user")
     public Project addUserToProject(@PathVariable("id") Long projectId, @RequestBody String username) {
         return this.projectService.addUserToProject(projectId, username);

@@ -1,13 +1,73 @@
 package com.samson.projectserviceintelliserver.services;
 
+import com.samson.projectserviceintelliserver.models.Users;
+import org.apache.catalina.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.*;
 import org.springframework.stereotype.Service;
+import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.client.RestTemplate;
+
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class DependencyService {
     
-    public boolean verifyAdmin(String username) {
+    private final RestTemplate restTemplate;
+    private final HttpServletRequest servletRequest;
+    
+    @Autowired
+    public DependencyService(RestTemplate restTemplate, HttpServletRequest servletRequest) {
+        this.restTemplate = restTemplate;
+        this.servletRequest = servletRequest;
+    }
+    
+    private String getAuthToken(String username, String password) throws URISyntaxException {
+        URI url = new URI("http://userservice.westeurope.cloudapp.azure.com/lgoin");
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        RequestEntity <String> loginRequest = new RequestEntity<>(
+                String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password),
+                headers,
+                HttpMethod.POST,
+                url
+        );
+
+        ResponseEntity<String> response = restTemplate.exchange(loginRequest, String.class);
+
+        return response.getBody();
+    }
+
+    public boolean verifyRole(String username, String password, String role) throws URISyntaxException {
         // logic for verifying the user as an admin
-        return true;
+        URI url = new URI("http://userservice.westeurope.cloudapp.azure.com/api/users");
+        
+        HttpHeaders headers = new HttpHeaders();
+        headers.setBearerAuth(getAuthToken(username, password));
+        
+        HttpEntity<Void> request = new HttpEntity<>(headers);
+        
+        ResponseEntity<List<Users>> response = restTemplate.exchange(
+                url, HttpMethod.GET, request,
+                new ParameterizedTypeReference<>() {}
+        );
+        
+        List<Users> usersList = response.getBody();
+        
+        if (usersList == null) return false;
+
+        Optional<Users> users = usersList.stream()
+                .filter(user -> user.getUsername().equals(username))
+                .findFirst();
+        
+        return users.isPresent() && users.get().getRole().contains(role);
     }
     
     public boolean verifyUser(String username) {
@@ -15,8 +75,13 @@ public class DependencyService {
         return true;
     }
     
-    public boolean verifyProjectOwner(String username, Long projectId) {
+    public boolean verifyProjectOwner(String username, String password, Long projectId) throws URISyntaxException {
         // logic for verifying the user as the owner of the project
+        
+        boolean isAdmin = verifyRole(username, password, "ADMIN");
+        
+        
+        
         return true;
     }
     

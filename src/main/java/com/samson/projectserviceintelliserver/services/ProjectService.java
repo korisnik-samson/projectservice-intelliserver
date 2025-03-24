@@ -1,5 +1,6 @@
 package com.samson.projectserviceintelliserver.services;
 
+import com.samson.projectserviceintelliserver.lib.Utils;
 import com.samson.projectserviceintelliserver.models.Project;
 import com.samson.projectserviceintelliserver.repositories.ProjectRepository;
 import lombok.NonNull;
@@ -29,11 +30,7 @@ public class ProjectService {
         
         project.setStartDate(LocalDateTime.parse(formatter.format(now), formatter));
         
-        //Optional<ProjectStatus> optionalProjectStatus = Optional.ofNullable(project.getProjectStatus());
-        
-        //optionalProjectStatus.ifPresent(project::setProjectStatus);
-        
-        if (project.getProjectStatus() == null) project.setProjectStatus(ProjectStatus.PENDING);
+        if (!Utils.verifyStatus(project.getProjectStatus())) project.setProjectStatus(ProjectStatus.PENDING);
         
         return this.projectRepository.save(project);
     }
@@ -51,12 +48,14 @@ public class ProjectService {
     }
 
     public Project updateProject(Long projectId, Project updateFields) {
+        
         return this.projectRepository.findById(projectId).map(project -> {
             if (updateFields.getProjectName() != null) project.setProjectName(updateFields.getProjectName());
             if (updateFields.getProjectDescription() != null) project.setProjectDescription(updateFields.getProjectDescription());
             if (updateFields.getStartDate() != null) project.setStartDate(updateFields.getStartDate());
             if (updateFields.getEndDate() != null) project.setEndDate(updateFields.getEndDate());
             if (updateFields.getProjectStatus() != null) project.setProjectStatus(updateFields.getProjectStatus());
+            if (updateFields.getCreatedBy() != null) project.setCreatedBy(updateFields.getCreatedBy());
             
             return this.projectRepository.save(project);
             
@@ -68,6 +67,8 @@ public class ProjectService {
     }
 
     public Project addUserToProject(Long projectId, String username) {
+        // verify the user as an ADMIN from the DependencyService before
+        
         return null;
     }
 

@@ -40,4 +40,7 @@ public class Project {
     @Enumerated(EnumType.STRING)
     private ProjectStatus projectStatus;
     
+    @Column(name = "created_by")
+    private String createdBy;
+    
 }
