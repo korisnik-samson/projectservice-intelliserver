@@ -19,12 +19,10 @@ import java.util.Optional;
 public class DependencyService {
     
     private final RestTemplate restTemplate;
-    private final HttpServletRequest servletRequest;
     
     @Autowired
-    public DependencyService(RestTemplate restTemplate, HttpServletRequest servletRequest) {
+    public DependencyService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
-        this.servletRequest = servletRequest;
     }
     
     private String getAuthToken(String username, String password) throws URISyntaxException {
