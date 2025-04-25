@@ -41,6 +41,7 @@ public class PreAuthourizeAspect {
         
         if (matcher.find()) {
             String role = matcher.group(1);
+            
             String username = request.getHeader("username");
             String password = request.getHeader("password");
             

@@ -1,17 +1,15 @@
 package com.samson.projectserviceintelliserver.services;
 
 import com.samson.projectserviceintelliserver.models.Users;
-import org.apache.catalina.User;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.*;
 import org.springframework.stereotype.Service;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.web.client.RestTemplate;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,14 +17,26 @@ import java.util.Optional;
 public class DependencyService {
     
     private final RestTemplate restTemplate;
+    private final URI baseUrl;
     
     @Autowired
     public DependencyService(RestTemplate restTemplate) {
         this.restTemplate = restTemplate;
+        this.baseUrl = URI.create("http://userservice.westeurope.cloudapp.azure.com/");
+    }
+    
+    @NonNull
+    private URI addPath(URI uri, @NonNull String path) {
+        String newPath;
+        
+        if (path.startsWith("/")) newPath = path.replaceAll("//+", "/");
+        else if (uri.getPath().endsWith("/")) newPath = uri.getPath() + path.replaceAll("//+", "/");
+        else newPath = uri.getPath() + "/" + path.replaceAll("//+", "/");
+
+        return uri.resolve(newPath).normalize();
     }
     
     private String getAuthToken(String username, String password) throws URISyntaxException {
-        URI url = new URI("http://userservice.westeurope.cloudapp.azure.com/lgoin");
         
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -35,7 +45,7 @@ public class DependencyService {
                 String.format("{\"username\":\"%s\", \"password\":\"%s\"}", username, password),
                 headers,
                 HttpMethod.POST,
-                url
+                addPath(this.baseUrl, "login")
         );
 
         ResponseEntity<String> response = restTemplate.exchange(loginRequest, String.class);
@@ -45,7 +55,6 @@ public class DependencyService {
 
     public boolean verifyRole(String username, String password, String role) throws URISyntaxException {
         // logic for verifying the user as an admin
-        URI url = new URI("http://userservice.westeurope.cloudapp.azure.com/api/users");
         
         HttpHeaders headers = new HttpHeaders();
         headers.setBearerAuth(getAuthToken(username, password));
@@ -53,7 +62,7 @@ public class DependencyService {
         HttpEntity<Void> request = new HttpEntity<>(headers);
         
         ResponseEntity<List<Users>> response = restTemplate.exchange(
-                url, HttpMethod.GET, request,
+                addPath(this.baseUrl, "api/login"), HttpMethod.GET, request,
                 new ParameterizedTypeReference<>() {}
         );
         
@@ -67,17 +76,39 @@ public class DependencyService {
         
         return users.isPresent() && users.get().getRole().contains(role);
     }
+
     
-    public boolean verifyUser(String username) {
-        // logic for verifying the user
-        return true;
+    public String getProjectCreatorUsername(String token) throws URISyntaxException {
+        return extractUsernameFromRequest(token);
+    }
+    
+    @NonNull
+    private String extractUsernameFromRequest(String token) throws URISyntaxException {
+        HttpHeaders headers = new HttpHeaders();
+        
+        headers.setBearerAuth(token);
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        
+        String requestBody = String.format("{\"token\":\"%s\"}", token);
+        
+        RequestEntity<String> request = new RequestEntity<>(
+                requestBody,
+                headers,
+                HttpMethod.POST,
+                addPath(this.baseUrl, "de-token")
+        );
+        
+        ResponseEntity<String> response = restTemplate.exchange(request, String.class);
+        
+        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null)
+            return response.getBody();
+        else throw new RuntimeException("Failed to extract username from request");
     }
     
     public boolean verifyProjectOwner(String username, String password, Long projectId) throws URISyntaxException {
         // logic for verifying the user as the owner of the project
         
         boolean isAdmin = verifyRole(username, password, "ADMIN");
-        
         
         
         return true;

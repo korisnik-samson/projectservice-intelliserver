@@ -7,6 +7,8 @@ import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.samson.projectserviceintelliserver.lib.ProjectStatus;
+
+import java.net.URISyntaxException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -16,13 +18,15 @@ import java.util.Optional;
 public class ProjectService {
     
     private final ProjectRepository projectRepository;
+    private final DependencyService dependencyService;
     
     @Autowired
-    public ProjectService(ProjectRepository projectRepository) {
+    public ProjectService(ProjectRepository projectRepository, DependencyService dependencyService) {
         this.projectRepository = projectRepository;
+        this.dependencyService = dependencyService;
     }
 
-    public Project createProject(@NonNull Project project) {
+    public Project createProject(@NonNull Project project) throws URISyntaxException {
         // logic for verification of the user as an admin from DependencyService
         
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
@@ -31,6 +35,9 @@ public class ProjectService {
         project.setStartDate(LocalDateTime.parse(formatter.format(now), formatter));
         
         if (!Utils.verifyStatus(project.getProjectStatus())) project.setProjectStatus(ProjectStatus.PENDING);
+        
+        // obtain the creator id from the DependencyService
+        project.setCreatedBy(this.dependencyService.getProjectCreatorUsername(project.getCreatedBy()));
         
         return this.projectRepository.save(project);
     }
